@@ -5,6 +5,9 @@ namespace ReviveSystem;
 
 public class BaseConfigs : BasePluginConfig
 {
+    [JsonPropertyName("ReviveButton")]
+    public string ReviveButton { get; set; } = "Use";
+
     [JsonPropertyName("CanReviveOthersFlag")]
     public string CanReviveOthersFlag { get; set; } = "@css/vip";
 
