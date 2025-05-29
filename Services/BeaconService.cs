@@ -4,20 +4,16 @@ using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Timers;
 using System.Drawing;
 
-namespace ReviveSystem
-{
-    public partial class ReviveSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
-    {
-        private Vector angle_on_circle(float angle, float radius, Vector mid)
-        {
-            return new Vector(
-                (float)(mid.X + (radius * Math.Cos(angle))),
-                (float)(mid.Y + (radius * Math.Sin(angle))),
-                mid.Z + 6.0f
-            );
-        }
+using ReviveSystem.Utils;
 
-        public void TeleportLaser(CBeam? laser, Vector start, Vector end)
+namespace ReviveSystem.Services
+{
+    public class BeaconService
+    {
+        private static readonly Vector VectorZero = new Vector(0, 0, 0);
+        private static readonly QAngle RotationZero = new QAngle(0, 0, 0);
+
+        public static void TeleportLaser(CBeam? laser, Vector start, Vector end)
         {
             if (laser == null || !laser.IsValid) return;
 
@@ -29,18 +25,14 @@ namespace ReviveSystem
             Utilities.SetStateChanged(laser, "CBeam", "m_vecEndPos");
         }
 
-        public void DrawBeaconOnPlayer(CCSPlayerController? player)
+        public static void DrawBeaconOnPlayer(CCSPlayerController? player, BasePlugin plugin)
         {
             if (player?.Pawn?.Value == null || player.PlayerPawn?.Value == null) return;
 
             var absOrigin = player.PlayerPawn?.Value?.AbsOrigin;
             if (absOrigin == null) return;
 
-            Vector mid = new Vector(
-                absOrigin.X,
-                absOrigin.Y,
-                absOrigin.Z
-            );
+            Vector mid = new Vector(absOrigin.X, absOrigin.Y, absOrigin.Z);
 
             int lines = 20;
             int[] ent = new int[lines];
@@ -54,8 +46,8 @@ namespace ReviveSystem
 
             for (int i = 0; i < lines; i++)
             {
-                Vector start = angle_on_circle(angle_old, radius, mid);
-                Vector end = angle_on_circle(angle_cur, radius, mid);
+                Vector start = BeaconUtils.AngleOnCircle(angle_old, radius, mid);
+                Vector end = BeaconUtils.AngleOnCircle(angle_cur, radius, mid);
 
                 var result = DrawLaserBetween(
                     start,
@@ -73,12 +65,12 @@ namespace ReviveSystem
                 angle_cur += step;
             }
 
-            AddTimer(0.1f, () =>
+            plugin.AddTimer(0.1f, () =>
             {
                 for (int i = 0; i < lines; i++)
                 {
-                    Vector start = angle_on_circle(angle_old, radius, mid);
-                    Vector end = angle_on_circle(angle_cur, radius, mid);
+                    Vector start = BeaconUtils.AngleOnCircle(angle_old, radius, mid);
+                    Vector end = BeaconUtils.AngleOnCircle(angle_cur, radius, mid);
 
                     TeleportLaser(beam_ent[i], start, end);
 
@@ -88,19 +80,10 @@ namespace ReviveSystem
                 radius += 10;
             }, TimerFlags.REPEAT);
 
-            PlaySoundOnPlayer(player, "sounds/tools/sfm/beep.vsnd_c");
+            SoundService.PlaySoundOnPlayer(player, "sounds/tools/sfm/beep.vsnd_c");
         }
 
-        private void PlaySoundOnPlayer(CCSPlayerController? player, string sound)
-        {
-            if (player == null || !player.IsValid) return;
-            player.ExecuteClientCommand($"play {sound}");
-        }
-
-        private static readonly Vector VectorZero = new Vector(0, 0, 0);
-        private static readonly QAngle RotationZero = new QAngle(0, 0, 0);
-
-        public (int, CBeam?) DrawLaserBetween(Vector startPos, Vector endPos, Color color, float life, float width)
+        private static (int, CBeam?) DrawLaserBetween(Vector startPos, Vector endPos, Color color, float life, float width)
         {
             if (startPos == null || endPos == null)
                 return (-1, null);
@@ -114,13 +97,19 @@ namespace ReviveSystem
             beam.Render = color;
             beam.Width = width;
 
-            beam.Teleport(startPos, RotationZero, VectorZero);
+            beam.Teleport(startPos, new QAngle(0, 0, 0), new Vector(0, 0, 0));
             beam.EndPos.X = endPos.X;
             beam.EndPos.Y = endPos.Y;
             beam.EndPos.Z = endPos.Z;
             beam.DispatchSpawn();
 
-            AddTimer(life, () => { if (beam?.IsValid == true) beam.Remove(); });
+            Server.NextFrame(() =>
+            {
+                Server.RunOnTick(Server.TickCount + (int)(life * 64), () =>
+                {
+                    if (beam?.IsValid == true) beam.Remove();
+                });
+            });
 
             return ((int)beam.Index, beam);
         }
