@@ -4,10 +4,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     </PropertyGroup>
+
      <ItemGroup>
         <PackageReference Include="CounterStrikeSharp.API" Version="*" />
         <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
+
 </Project>
