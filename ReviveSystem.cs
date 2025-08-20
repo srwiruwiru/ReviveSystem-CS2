@@ -9,11 +9,11 @@ using static CounterStrikeSharp.API.Core.Listeners;
 
 namespace ReviveSystem
 {
-    [MinimumApiVersion(296)]
+    [MinimumApiVersion(336)]
     public partial class ReviveSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
     {
         public override string ModuleName => "ReviveSystem";
-        public override string ModuleVersion => "0.1.5-beta";
+        public override string ModuleVersion => "0.1.6-beta";
         public override string ModuleAuthor => "luca.uy";
         public override string ModuleDescription => "Allows players to revive one of their teammates per round.";
 

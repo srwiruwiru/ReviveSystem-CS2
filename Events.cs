@@ -2,7 +2,6 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
-using System;
 
 namespace ReviveSystem;
 
@@ -45,6 +44,17 @@ public partial class ReviveSystemBase
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if (player?.UserId != null && player.IsValid && !player.IsBot && !player.IsHLTV && player.Connected == PlayerConnectedState.PlayerConnected)
+            {
+                if (!PlayersInfo.ContainsKey(player.UserId.Value))
+                {
+                    PlayersInfo[player.UserId.Value] = new PlayerInfo(player.UserId.Value, player.PlayerName);
+                }
+            }
+        }
+
         foreach (var player in PlayersInfo.Values)
         {
             player.DiePosition = null;
@@ -57,10 +67,30 @@ public partial class ReviveSystemBase
     [GameEventHandler]
     public HookResult OnPlayerFullConnect(EventPlayerConnectFull @event, GameEventInfo info)
     {
-        foreach (var player in PlayersInfo.Values)
+        var player = @event.Userid;
+        if (player?.UserId != null && player.IsValid && !player.IsBot && !player.IsHLTV)
         {
-            player.DiePosition = null;
-            player.ReviveCount = 0;
+            if (!PlayersInfo.ContainsKey(player.UserId.Value))
+            {
+                PlayersInfo[player.UserId.Value] = new PlayerInfo(player.UserId.Value, player.PlayerName);
+            }
+            else
+            {
+                PlayersInfo[player.UserId.Value].DiePosition = null;
+                PlayersInfo[player.UserId.Value].ReviveCount = 0;
+            }
+        }
+
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+        var player = @event.Userid;
+        if (player?.UserId != null && PlayersInfo.ContainsKey(player.UserId.Value))
+        {
+            PlayersInfo.Remove(player.UserId.Value);
         }
 
         return HookResult.Continue;
