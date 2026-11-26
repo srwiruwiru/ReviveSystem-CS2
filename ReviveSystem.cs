@@ -4,14 +4,14 @@ using CounterStrikeSharp.API.Core.Attributes;
 using static CounterStrikeSharp.API.Core.Listeners;
 
 using ReviveSystem.Utils;
-using ReviveSystem.Config;
+using ReviveSystem.Configs;
 using ReviveSystem.Managers;
 using ReviveSystem.Services;
 
 namespace ReviveSystem
 {
     [MinimumApiVersion(381)]
-    public partial class ReviveSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
+    public partial class ReviveSystemBase : BasePlugin, IPluginConfig<BaseConfig>
     {
         public override string ModuleName => "ReviveSystem";
         public override string ModuleVersion => "0.1.5-beta";
@@ -22,7 +22,7 @@ namespace ReviveSystem
         private readonly Dictionary<int, DateTime> LastUpdateTimes = new();
         private ReviveManager? _reviveManager;
 
-        public required BaseConfigs Config { get; set; }
+        public required BaseConfig Config { get; set; }
         private PlayerButtons ReviveButtonFlag { get; set; } = PlayerButtons.Use;
 
         public override void Load(bool hotReload)
@@ -30,11 +30,11 @@ namespace ReviveSystem
             RegisterListener<OnTick>(OnTick);
         }
 
-        public void OnConfigParsed(BaseConfigs config)
+        public void OnConfigParsed(BaseConfig config)
         {
             Config = config;
-            ReviveButtonFlag = PlayerUtils.ParseReviveButton(config.ReviveButton);
-            _reviveManager = new ReviveManager(config, this);
+            ReviveButtonFlag = PlayerUtils.ParseReviveButton(config.Revive.Button);
+            _reviveManager = new ReviveManager(config.Permissions, this);
         }
 
         private void OnTick()
@@ -76,7 +76,7 @@ namespace ReviveSystem
                 return;
             }
 
-            if (playerInfo.ReviveCount >= Config.MaxRevivesPerRound)
+            if (playerInfo.ReviveCount >= Config.Revive.MaxPerRound)
             {
                 HandleReviveLimitReached(player, playerInfo);
                 return;
@@ -127,7 +127,7 @@ namespace ReviveSystem
             {
                 if (targetPlayer.DiePosition.HasValue &&
                     player.PlayerPawn?.Value != null &&
-                    DistanceUtils.CalculateDistance(player.PlayerPawn.Value.AbsOrigin, targetPlayer.DiePosition.Value.Position) <= Config.ReviveRange)
+                    DistanceUtils.CalculateDistance(player.PlayerPawn.Value.AbsOrigin, targetPlayer.DiePosition.Value.Position) <= Config.Revive.Range)
                 {
                     HandleReviveProgress(player, playerInfo, targetPlayer);
                     break;
@@ -154,7 +154,7 @@ namespace ReviveSystem
                 LastUpdateTimes[playerId] = DateTime.Now;
             }
 
-            if (pressDuration >= Config.ReviveTime && _reviveManager!.CanRevive(player, targetPlayer))
+            if (pressDuration >= Config.Revive.HoldTime && _reviveManager!.CanRevive(player, targetPlayer))
             {
                 player.PrintToChat($"{Localizer["prefix"]} {string.Format(Localizer["ReviveComplete"], targetPlayer.Name)}");
                 _reviveManager.RespawnPlayer(player, targetPlayer);
@@ -166,10 +166,10 @@ namespace ReviveSystem
         private void ShowReviveProgress(CCSPlayerController player, Models.PlayerInfo targetPlayer, double pressDuration)
         {
             var progressBarLength = 20;
-            var filledLength = (int)(progressBarLength * (pressDuration / Config.ReviveTime));
+            var filledLength = (int)(progressBarLength * (pressDuration / Config.Revive.HoldTime));
             var emptyLength = progressBarLength - filledLength;
             var progressBar = new string('▌', filledLength) + new string('░', emptyLength);
-            var percentage = (int)((pressDuration / Config.ReviveTime) * 100);
+            var percentage = (int)((pressDuration / Config.Revive.HoldTime) * 100);
 
             player.PrintToCenterHtml($"{string.Format(Localizer["Reviving"], targetPlayer.Name)} 『{progressBar}』 {percentage}%");
         }
@@ -181,7 +181,7 @@ namespace ReviveSystem
                 bool hasValidTarget = PlayerManager.PlayersInfo.Values.Any(targetPlayer =>
                     targetPlayer.DiePosition.HasValue &&
                     player.PlayerPawn?.Value != null &&
-                    DistanceUtils.CalculateDistance(player.PlayerPawn.Value.AbsOrigin, targetPlayer.DiePosition.Value.Position) <= Config.ReviveRange
+                    DistanceUtils.CalculateDistance(player.PlayerPawn.Value.AbsOrigin, targetPlayer.DiePosition.Value.Position) <= Config.Revive.Range
                 );
 
                 if (hasValidTarget)

@@ -4,7 +4,7 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 
-using ReviveSystem.Config;
+using ReviveSystem.Configs;
 using ReviveSystem.Models;
 
 namespace ReviveSystem.Managers
@@ -12,10 +12,10 @@ namespace ReviveSystem.Managers
     public class ReviveManager
     {
         private static MemoryFunctionVoid<CBasePlayerController, CCSPlayerPawn, bool, bool>? _cBasePlayerControllerSetPawnFunc;
-        private readonly BaseConfigs _config;
+        private readonly PermissionsConfig _config;
         private readonly BasePlugin _plugin;
 
-        public ReviveManager(BaseConfigs config, BasePlugin plugin)
+        public ReviveManager(PermissionsConfig config, BasePlugin plugin)
         {
             _config = config;
             _plugin = plugin;
