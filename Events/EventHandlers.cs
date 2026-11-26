@@ -14,7 +14,7 @@ namespace ReviveSystem.Events
         {
             var player = @event.Userid;
 
-            if (player?.UserId == null || !player.IsValid || player.IsHLTV || player.Connected != PlayerConnectedState.PlayerConnected)
+            if (player?.UserId == null || !player.IsValid || player.IsHLTV || player.Connected != PlayerConnectedState.Connected)
             {
                 return HookResult.Continue;
             }

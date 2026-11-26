@@ -10,7 +10,7 @@ using ReviveSystem.Utils;
 
 namespace ReviveSystem
 {
-    [MinimumApiVersion(296)]
+    [MinimumApiVersion(381)]
     public partial class ReviveSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
     {
         public override string ModuleName => "ReviveSystem";

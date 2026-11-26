@@ -1,15 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+        <OutputPath>bin\Release\ReviveSystem\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <DebugType>none</DebugType>
     </PropertyGroup>
 
-     <ItemGroup>
-        <PackageReference Include="CounterStrikeSharp.API" Version="*" />
-        <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    <ItemGroup>
+        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.381" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
 </Project>
