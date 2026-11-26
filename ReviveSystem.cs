@@ -14,7 +14,7 @@ namespace ReviveSystem
     public partial class ReviveSystemBase : BasePlugin, IPluginConfig<BaseConfig>
     {
         public override string ModuleName => "ReviveSystem";
-        public override string ModuleVersion => "0.1.5-beta";
+        public override string ModuleVersion => "0.1.6-beta";
         public override string ModuleAuthor => "luca.uy";
         public override string ModuleDescription => "Allows players to revive one of their teammates per round.";
 
