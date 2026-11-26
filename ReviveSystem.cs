@@ -3,10 +3,10 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using static CounterStrikeSharp.API.Core.Listeners;
 
+using ReviveSystem.Utils;
 using ReviveSystem.Config;
 using ReviveSystem.Managers;
 using ReviveSystem.Services;
-using ReviveSystem.Utils;
 
 namespace ReviveSystem
 {
