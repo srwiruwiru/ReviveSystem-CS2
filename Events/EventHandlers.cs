@@ -1,7 +1,9 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 
+using ReviveSystem.Utils;
 using ReviveSystem.Managers;
 using ReviveSystem.Models;
 
@@ -45,6 +47,7 @@ namespace ReviveSystem
         [GameEventHandler]
         public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
         {
+            TrackConnectedHumanPlayers();
             PlayerManager.ResetAllPlayersForNewRound();
             Utils.Logger.LogDebug(LogCategory, "Round started, revive state reset");
             return HookResult.Continue;
@@ -53,8 +56,36 @@ namespace ReviveSystem
         [GameEventHandler]
         public HookResult OnPlayerFullConnect(EventPlayerConnectFull @event, GameEventInfo info)
         {
-            PlayerManager.ResetAllPlayersForNewRound();
+            var player = @event.Userid;
+
+            if (PlayerUtils.TryGetHumanUserId(player, out var userId))
+            {
+                PlayerManager.TrackNewPlayer(userId, player.PlayerName);
+            }
+
             return HookResult.Continue;
+        }
+
+        [GameEventHandler]
+        public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+        {
+            if (@event.Userid?.UserId is int userId)
+            {
+                PlayerManager.StopTrackingPlayer(userId);
+            }
+
+            return HookResult.Continue;
+        }
+
+        private static void TrackConnectedHumanPlayers()
+        {
+            foreach (var player in Utilities.GetPlayers())
+            {
+                if (PlayerUtils.TryGetHumanUserId(player, out var userId) && player.Connected == PlayerConnectedState.Connected)
+                {
+                    PlayerManager.EnsurePlayerExists(userId, player.PlayerName);
+                }
+            }
         }
     }
 }

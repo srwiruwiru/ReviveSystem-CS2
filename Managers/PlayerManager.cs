@@ -22,5 +22,15 @@ namespace ReviveSystem.Managers
                 PlayersInfo[userId] = new PlayerInfo(userId, playerName);
             }
         }
+
+        public static void TrackNewPlayer(int userId, string playerName)
+        {
+            PlayersInfo[userId] = new PlayerInfo(userId, playerName);
+        }
+
+        public static void StopTrackingPlayer(int userId)
+        {
+            PlayersInfo.Remove(userId);
+        }
     }
 }
