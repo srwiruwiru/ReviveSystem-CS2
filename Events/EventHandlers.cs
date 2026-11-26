@@ -5,7 +5,8 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using ReviveSystem.Managers;
 using ReviveSystem.Models;
 
-namespace ReviveSystem.Events
+// NOTE: Same namespace as the plugin class because [GameEventHandler] methods only register on the plugin's own partial class
+namespace ReviveSystem
 {
     public partial class ReviveSystemBase
     {
