@@ -38,6 +38,7 @@ namespace ReviveSystem
                 )
             );
 
+            Utils.Logger.LogDebug(LogCategory, $"Saved death position of {player.PlayerName} (user id {player.UserId.Value})");
             return HookResult.Continue;
         }
 
@@ -45,6 +46,7 @@ namespace ReviveSystem
         public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
         {
             PlayerManager.ResetAllPlayersForNewRound();
+            Utils.Logger.LogDebug(LogCategory, "Round started, revive state reset");
             return HookResult.Continue;
         }
 

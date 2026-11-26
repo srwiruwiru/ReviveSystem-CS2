@@ -20,10 +20,13 @@ namespace ReviveSystem
 
         private readonly Dictionary<int, DateTime> LastBeaconTimes = new();
         private readonly Dictionary<int, DateTime> LastUpdateTimes = new();
+        private const string LogCategory = "Core";
+        private const PlayerButtons DefaultReviveButton = PlayerButtons.Use;
         private ReviveManager? _reviveManager;
+        private bool _isReviveTickStopped;
 
         public required BaseConfig Config { get; set; }
-        private PlayerButtons ReviveButtonFlag { get; set; } = PlayerButtons.Use;
+        private PlayerButtons ReviveButtonFlag { get; set; } = DefaultReviveButton;
 
         public override void Load(bool hotReload)
         {
@@ -33,11 +36,49 @@ namespace ReviveSystem
         public void OnConfigParsed(BaseConfig config)
         {
             Config = config;
-            ReviveButtonFlag = PlayerUtils.ParseReviveButton(config.Revive.Button);
+            Utils.Logger.Config = config;
+            ReviveButtonFlag = ResolveReviveButton(config.Revive.Button);
             _reviveManager = new ReviveManager(config.Permissions, this);
+            Utils.Logger.LogDebug(LogCategory, $"Config loaded: button={ReviveButtonFlag}, holdTime={config.Revive.HoldTime}s, range={config.Revive.Range}, maxPerRound={config.Revive.MaxPerRound}");
+        }
+
+        private static PlayerButtons ResolveReviveButton(string buttonName)
+        {
+            if (PlayerUtils.TryParseButton(buttonName, out var button))
+            {
+                return button;
+            }
+
+            Utils.Logger.LogWarning(LogCategory, $"Unknown Revive.Button '{buttonName}', falling back to '{DefaultReviveButton}'");
+            return DefaultReviveButton;
         }
 
         private void OnTick()
+        {
+            if (_isReviveTickStopped)
+            {
+                return;
+            }
+
+            try
+            {
+                UpdateRevivingPlayers();
+            }
+            catch (Exception exception)
+            {
+                StopReviveTick(exception);
+            }
+        }
+
+        private void StopReviveTick(Exception exception)
+        {
+            _isReviveTickStopped = true;
+            Utils.Logger.LogError(LogCategory, $"Revive tick failed and is stopped until the plugin is reloaded: {exception}");
+            // NOTE: Deferred because unhooking from inside a running hook invalidates the engine's callback list
+            Server.NextFrame(() => RemoveListener<OnTick>(OnTick));
+        }
+
+        private void UpdateRevivingPlayers()
         {
             foreach (var player in Utilities.GetPlayers())
             {

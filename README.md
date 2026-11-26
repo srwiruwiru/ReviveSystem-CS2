@@ -29,6 +29,7 @@ The configuration file (`ReviveSystem.json`) will be auto-generated after the fi
 | `Revive.MaxPerRound` | Maximum number of revives a player can perform per round. | **`1`** |
 | `Permissions.CanReviveOthersFlag` | Permission needed for a player to revive others. Leave empty to allow all players. | **`@css/vip`** |
 | `Permissions.CanBeRevivedFlag` | Permission needed to revive a player. Leave empty to allow reviving any dead teammate. | **`empty`** |
+| `EnableDebug` | Prints detailed debug logs to the server console. | **`false`** |
 
 ```json
 {
@@ -42,6 +43,7 @@ The configuration file (`ReviveSystem.json`) will be auto-generated after the fi
     "CanReviveOthersFlag": "@css/vip",
     "CanBeRevivedFlag": ""
   },
+  "EnableDebug": false,
   "ConfigVersion": 1
 }
 ```
